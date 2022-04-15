@@ -1,3 +1,5 @@
 const parser = require('./parser/main');
+const bot = require('./bot/main');
 
-parser.start();
+// parser.getFutersPrice();
+bot.startBot();
