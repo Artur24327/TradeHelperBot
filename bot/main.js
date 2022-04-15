@@ -66,6 +66,10 @@ function startBot(){
                 id = chatId;
                 parser.getTopActive();
                 break;
+            case '/show_volume':
+                id = chatId;
+                parser.getTopVolume();
+                break;
         }
         
     })
@@ -94,7 +98,6 @@ function startBot(){
 }
 
 function botMessage(message){
-    console.log(id + message);
     bot.sendMessage(id, message);
 }
 
