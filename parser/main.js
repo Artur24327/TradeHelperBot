@@ -69,6 +69,28 @@ function getTopVolume(){
     ).catch(err => bot.botMessage("Error"));
 }
 
+function createSignal(ticker){
+    new Promise ((resolve) => {
+
+        let symbolArr = [];
+        let result;
+
+        connect.prevDay(false, (error, prevDay) => {
+            prevDay.forEach((element) => {
+                symbolArr.push(element.symbol);
+            });
+            const checkSymbol = (element) => element == ticker.toUpperCase();
+            result = symbolArr.some(checkSymbol);
+            if(result == true){
+                result = "Signal created!";
+            }else if(result == false){
+                result = "Bad ticker! Write again...";
+            }
+            resolve(result);
+          });
+    }).then(result => bot.botMessage(result)
+    ).catch(err => bot.botMessage("Error"));
+}
 
 function byField(field) {
     return (a, b) => a[field] > b[field] ? -1 : 1;
@@ -77,3 +99,4 @@ function byField(field) {
     
 exports.getTopActive = getTopActive;
 exports.getTopVolume = getTopVolume;
+exports.createSignal = createSignal;

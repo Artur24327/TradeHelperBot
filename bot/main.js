@@ -32,7 +32,6 @@ const commands = {
 
 function menuBot(chatId){
     bot.sendMessage(chatId, "Choose option:", commands);
-   
 }
 
 function startBot(){
@@ -40,15 +39,16 @@ function startBot(){
         {command: '/info',  description: 'To get info of commands'},
         {command: '/start', description: 'Start bot'},
         {command: '/menu', description: 'Show all options'},
-        {command: '/create_signal', description: 'Create signal'},
-        // {command: '/showVolume', description: 'Show TOP volume'},
-        // {command: '/showActive', description: 'Show TOP active'},
+        // {command: '/create_signal', description: 'Create signal'},
+        // {command: '/show_volume', description: 'Show TOP volume'},
+        // {command: '/show_active', description: 'Show TOP active'},
     ])
 
 
     bot.on('callback_query', message => {
         const data = message.data;
         const chatId = message.message.chat.id;
+        id = chatId;
         switch(data){
             // case '/start':
             //     bot.sendMessage(chatId, firstMessage);
@@ -60,14 +60,12 @@ function startBot(){
             //     menuBot();
             //     break;
             case '/create_signal':
-                bot.sendMessage(chatId, "Write ticker:");
+                bot.sendMessage(chatId, "Write ticker(example: /create_signal btcusdt):");
                 break;
             case '/show_active':
-                id = chatId;
                 parser.getTopActive();
                 break;
             case '/show_volume':
-                id = chatId;
                 parser.getTopVolume();
                 break;
         }
@@ -87,19 +85,30 @@ function startBot(){
             case '/menu':
                 menuBot(chatId);
                 break;
-            case '/create_signal':
-                bot.sendMessage(chatId, "Write ticker:");
-                break;
+            // case '/create_signal':
+            //     bot.sendMessage(chatId, "Write ticker(example: /create_signal btcusdt):");
+            //     console.log(userMessage);
+            //     // parser.createSignal(userMessage);
+            //     break;
         }
         
-    })
+    });
+
+    bot.onText(/\/create_signal (.+)/, (msg, match) => {
+        const chatId = msg.chat.id;
+        const resp = match[1];
+        parser.createSignal(resp);
+      });
     
     // commandBot(tokenBot);
 }
 
+
 function botMessage(message){
     bot.sendMessage(id, message);
 }
+
+
 
 exports.startBot = startBot;
 exports.botMessage = botMessage;
