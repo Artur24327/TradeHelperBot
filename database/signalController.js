@@ -6,8 +6,12 @@ class signalController{
         .catch(err => console.log(err));
     }
 
-    async getAllSignals(req, res) {
-
+    async getAllSignals(chatId) {
+        let res;
+        await db.query(`SELECT * FROM userSignals WHERE idUser IN (SELECT idUser FROM users WHERE idChat = '${chatId}')`)
+        .then(result => {res = result.rows})
+        .catch(err => console.log(err)); 
+        return res;
     }
 
     async updateSignal(req, res) {

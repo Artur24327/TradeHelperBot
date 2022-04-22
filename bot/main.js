@@ -20,7 +20,7 @@ let id;
 const commands = {
     reply_markup: JSON.stringify({
         inline_keyboard: [
-            [{text:'Create signal', callback_data: '/create_signal'}],
+            [{text:'Create signal', callback_data: '/create_signal'}, {text:'Show my signals', callback_data: '/show_signal'}],
             [{text:'Show TOP volume', callback_data: '/show_volume'},{text:'Show TOP active', callback_data: '/show_active'}]
         ]
     })
@@ -51,6 +51,9 @@ function startBot(){
         switch(data){
             case '/create_signal':
                 bot.sendMessage(chatId, "Write ticker(example: /create_signal btcusdt 200.5 ):");
+                break;
+            case '/show_signal':
+                parser.showSignals(chatId);
                 break;
             case '/show_active':
                 parser.getTopActive();

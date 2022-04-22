@@ -20,8 +20,8 @@ class userController{
         let res;
         await db.query(`SELECT iduser FROM users WHERE idChat = '${idChat}'`)
         .then(result => {res = result.rows[0].iduser})
-        .catch(err => console.log(err));  
-        return res;
+        .catch(err => console.log(err)); 
+        return res; 
     }
 
     async deleteUser(idChat) {

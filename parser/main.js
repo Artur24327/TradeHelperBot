@@ -109,6 +109,15 @@ function createSignal(ticker, price, chatId){
     ).catch(err => bot.botMessage("Error"));
 }
 
+async function showSignals(chatId){
+    let query = await bdSignal.signalController.getAllSignals(chatId);
+    let result = 'Your signals:\n';
+    query.forEach(element => {
+        result += element.symbol.toUpperCase() + " on price " + element.price + "\n";
+    });
+    bot.botMessage(result);
+}
+
 function byField(field) {
     return (a, b) => a[field] > b[field] ? -1 : 1;
 }
@@ -117,3 +126,4 @@ function byField(field) {
 exports.getTopActive = getTopActive;
 exports.getTopVolume = getTopVolume;
 exports.createSignal = createSignal;
+exports.showSignals = showSignals;
