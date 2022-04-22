@@ -1,4 +1,6 @@
 const bot = require('../bot/main');
+const bdSignal = require('../database/signalController');
+const bdUser = require('../database/userController');
 const  binance  =  require('node-binance-api');
 const  connect  =  new  binance ().options({ 
     APIKEY : 'dkl5SmAcvSAtzXWi8kCHUojw03Npeghi7A3ErXgVoO7vsNFMpr9BLxevkH6dYUZh' , 
@@ -69,26 +71,41 @@ function getTopVolume(){
     ).catch(err => bot.botMessage("Error"));
 }
 
-function createSignal(ticker){
-    new Promise ((resolve) => {
+function createSignal(ticker, price, chatId){
+    new Promise (async (resolve) => {
 
-        let symbolArr = [];
-        let result;
+        let symbolObj = {};
+        let result = false;
+        let trigger = "Bad ticker! Write again...";
 
+         ////////потрібно дістати ід юзера з бд
+        let idUser = await bdUser.userController.getUserId(chatId);
+        
+        //////api binance
         connect.prevDay(false, (error, prevDay) => {
             prevDay.forEach((element) => {
-                symbolArr.push(element.symbol);
+                
+                symbolObj[element.symbol] = element.lastPrice;
             });
-            const checkSymbol = (element) => element == ticker.toUpperCase();
-            result = symbolArr.some(checkSymbol);
-            if(result == true){
-                result = "Signal created!";
-            }else if(result == false){
-                result = "Bad ticker! Write again...";
+
+            for(key in symbolObj){
+                if(key == ticker.toUpperCase()){
+                    result = "Signal created!";
+                    if(+symbolObj[key] > price){
+                        trigger = '<';
+                    }else if(+symbolObj[key] < price){
+                        trigger = '>';
+                    }
+                    // console.log(idUser, key, symbolObj[key], trigger);
+                    //break;
+                }
             }
-            resolve(result);
-          });
-    }).then(result => bot.botMessage(result)
+            resolve({result, idUser, ticker, price, trigger});
+        });
+    }).then(({result, idUser, ticker, price, trigger}) => {
+        bdSignal.signalController.createSignal(idUser, ticker, price, trigger);
+        bot.botMessage(result)
+    }
     ).catch(err => bot.botMessage("Error"));
 }
 
