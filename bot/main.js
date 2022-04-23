@@ -50,7 +50,7 @@ function startBot(){
         id = chatId;
         switch(data){
             case '/create_signal':
-                bot.sendMessage(chatId, "Write ticker(example: /create_signal btcusdt 200.5 ):");
+                bot.sendMessage(chatId, 'Write ticker(example: "/create_signal btcusdt 200" ):');
                 break;
             case '/show_signal':
                 parser.showSignals(chatId);
@@ -92,10 +92,19 @@ function startBot(){
         const chatId = msg.chat.id;
         id = chatId;
         const resp = match[1].split(' ');
-        const ticker = resp[0];
+        const ticker = resp[0].toUpperCase();
         const price = resp[1];
         parser.createSignal(ticker, price, chatId);
-      });
+    });
+
+    bot.onText(/\/delete_signal (.+)/, (msg, match) => {
+        const chatId = msg.chat.id;
+        id = chatId;
+        const resp = match[1].split(' ');
+        const ticker = resp[0].toUpperCase();
+        const price = resp[1];
+        parser.deleteSignal(ticker, price, chatId);
+    });
     
     // commandBot(tokenBot);
 }

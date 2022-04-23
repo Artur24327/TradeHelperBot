@@ -71,12 +71,12 @@ function getTopVolume(){
     ).catch(err => bot.botMessage("Error"));
 }
 
-function createSignal(ticker, price, chatId){
+function createSignal(ticker, price, chatId){//////переписати функцію, працює криво
     new Promise (async (resolve) => {
 
         let symbolObj = {};
         let result = false;
-        let trigger = "Bad ticker! Write again...";
+        let trigger = "Bad enter! Write again...";
 
          ////////потрібно дістати ід юзера з бд
         let idUser = await bdUser.userController.getUserId(chatId);
@@ -88,18 +88,23 @@ function createSignal(ticker, price, chatId){
                 symbolObj[element.symbol] = element.lastPrice;
             });
 
-            for(key in symbolObj){
-                if(key == ticker.toUpperCase()){
-                    result = "Signal created!";
-                    if(+symbolObj[key] > price){
-                        trigger = '<';
-                    }else if(+symbolObj[key] < price){
-                        trigger = '>';
+            try{
+                for(key in symbolObj){
+                    if(key == ticker){
+                        result = "Signal created!";
+                        if(+symbolObj[key] > +price){
+                            trigger = '<';
+                        }else if(+symbolObj[key] < +price){
+                            trigger = '>';
+                        }
+                        // console.log(idUser, key, symbolObj[key], trigger);
+                        break;
                     }
-                    // console.log(idUser, key, symbolObj[key], trigger);
-                    //break;
                 }
+            }catch (error){
+                result = "Bad enter! Write again...";
             }
+            
             resolve({result, idUser, ticker, price, trigger});
         });
     }).then(({result, idUser, ticker, price, trigger}) => {
@@ -111,11 +116,16 @@ function createSignal(ticker, price, chatId){
 
 async function showSignals(chatId){
     let query = await bdSignal.signalController.getAllSignals(chatId);
-    let result = 'Your signals:\n';
-    query.forEach(element => {
-        result += element.symbol.toUpperCase() + " on price " + element.price + "\n";
+    let result = 'You can delete signals. Write "/delete_signal *ticker* *price*"  (For example "/delete_signal btcusdt 4000").\n \nYour signals:\n';
+    query.forEach((element) => {
+        result += element.symbol + " " + element.price +"\n";
     });
     bot.botMessage(result);
+}
+
+async function deleteSignal(ticker, price, chatId){
+    let query = await bdSignal.signalController.deleteSignal(chatId, ticker, price);
+    bot.botMessage(query);
 }
 
 function byField(field) {
@@ -127,3 +137,4 @@ exports.getTopActive = getTopActive;
 exports.getTopVolume = getTopVolume;
 exports.createSignal = createSignal;
 exports.showSignals = showSignals;
+exports.deleteSignal = deleteSignal;
