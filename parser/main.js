@@ -72,46 +72,44 @@ function getTopVolume(){
 }
 
 function createSignal(ticker, price, chatId){//////переписати функцію, працює криво
-    new Promise (async (resolve) => {
+    new Promise (async (resolve, reject) => {
+        if(isNaN(+price))reject();
 
         let symbolObj = {};
-        let result = false;
-        let trigger = "Bad enter! Write again...";
+        // let result = "Bad enter! Write again...";
+        let trigger;
 
-         ////////потрібно дістати ід юзера з бд
+        ////////потрібно дістати ід юзера з бд
         let idUser = await bdUser.userController.getUserId(chatId);
+        
         
         //////api binance
         connect.prevDay(false, (error, prevDay) => {
             prevDay.forEach((element) => {
-                
                 symbolObj[element.symbol] = element.lastPrice;
             });
 
-            try{
-                for(key in symbolObj){
-                    if(key == ticker){
-                        result = "Signal created!";
-                        if(+symbolObj[key] > +price){
-                            trigger = '<';
-                        }else if(+symbolObj[key] < +price){
-                            trigger = '>';
-                        }
-                        // console.log(idUser, key, symbolObj[key], trigger);
-                        break;
+        
+            for(key in symbolObj){
+                if(key == ticker){
+                    // result = "Signal created!";
+                    if(+symbolObj[key] > price){
+                        trigger = '<';
+                    }else if(+symbolObj[key] < price){
+                        trigger = '>';
                     }
+                    // console.log(idUser, key, symbolObj[key], trigger);
+                    break;
                 }
-            }catch (error){
-                result = "Bad enter! Write again...";
             }
-            
-            resolve({result, idUser, ticker, price, trigger});
+            resolve({idUser, ticker, price, trigger});
         });
-    }).then(({result, idUser, ticker, price, trigger}) => {
+    }).then(({idUser, ticker, price, trigger}) => {
         bdSignal.signalController.createSignal(idUser, ticker, price, trigger);
-        bot.botMessage(result)
-    }
-    ).catch(err => bot.botMessage("Error"));
+        bot.botMessage("Signal created!");
+    })
+    .catch(() => bot.botMessage("Bad enter! Write again..."));
+
 }
 
 async function showSignals(chatId){

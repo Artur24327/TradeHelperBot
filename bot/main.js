@@ -1,7 +1,6 @@
 const TelegramApi = require('node-telegram-bot-api');
 const parser = require('../parser/main');
 const bd = require('../database/userController');
-
 const tokenBot = '5169311848:AAHM85DS_v1So_dm5v5P-_EGYtorYBGg5Mc';
 const bot = new TelegramApi(tokenBot, {polling: true})
 
@@ -25,10 +24,6 @@ const commands = {
         ]
     })
 }
-
-// function commandBot(){
-
-// }
 
 function menuBot(chatId){
     bot.sendMessage(chatId, "Choose option:", commands);
@@ -114,10 +109,13 @@ function botMessage(message){
     bot.sendMessage(id, message);
 }
 
-
+function signalAlert(idChat, message){
+    bot.sendMessage(idChat, message);
+}
 
 exports.startBot = startBot;
 exports.botMessage = botMessage;
+exports.signalAlert = signalAlert;
 
 
 

@@ -15,8 +15,15 @@ class signalController{
         return res;
     }
 
-    async updateSignal(req, res) {
-
+    async getSignalsAllUsers() {
+        let res;
+        // await db.query(`SELECT * FROM userSignals`)
+        await db.query(`SELECT userSignals.symbol, userSignals.price, userSignals.triggervalue, users.idchat as idChat 
+        FROM userSignals RIGHT OUTER JOIN users 
+        ON userSignals.iduser = users.iduser`)
+        .then(result => {res = result.rows})
+        .catch(err => console.log(err)); 
+        return res;
     }
 
     async deleteSignal(chatId, symbol, price) {
