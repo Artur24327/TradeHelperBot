@@ -1,11 +1,19 @@
 const bot = require('../bot/main');
 const bdSignal = require('../database/signalController');
 const bdUser = require('../database/userController');
-const  binance  =  require('node-binance-api');
+const binance  =  require('node-binance-api');
+const keys = require('../config');
 const  connect  =  new  binance ().options({ 
-    APIKEY : 'dkl5SmAcvSAtzXWi8kCHUojw03Npeghi7A3ErXgVoO7vsNFMpr9BLxevkH6dYUZh' , 
-    APISECRET : 'Q7a91imDhCHNfROw63LaOEm4FnPZqKXljh7GG0DINDAtr9sZ4BK8e59MJhC6d3CR' 
+    APIKEY : keys.MyApiKeys.apiKey, 
+    APISECRET : keys.MyApiKeys.apiSecret 
 });
+
+let str = ["BTCUSDT","BTCUSCD","BTCUPUSDT","BTCDOWNUSDT"];
+
+str.forEach(element=>{
+    console.log(element.match(/^((?!UP|DOWN).)*USDT$/));
+});
+
 
 
 function getTopActive(){
@@ -18,10 +26,12 @@ function getTopActive(){
         connect.prevDay(false, (error, prevDay) => {
             prevDay.forEach((element) => {
                 //Фільтрація непотрібних монет
-                if(element.symbol.search(/USDT/) != -1 && 
-                element.symbol.search(/UP/) == -1 && 
-                element.symbol.search(/DOWN/) == -1 &&
-                element.priceChangePercent >= 0){
+                // if(element.symbol.search(/USDT/) != -1 && 
+                // element.symbol.search(/UP/) == -1 && 
+                // element.symbol.search(/DOWN/) == -1 &&
+                // element.priceChangePercent >= 0){
+                let symbol = element.symbol;
+                if(symbol.match(/^((?!UP|DOWN).)*USDT$/) != null){
                     element.priceChangePercent = Math.floor(element.priceChangePercent * 100) / 100;
                     resultObj.push(element);
                     // сonsole.log(element);
@@ -36,7 +46,7 @@ function getTopActive(){
           });
          
     }).then(result => bot.botMessage(result)
-    ).catch(err => bot.botMessage("Error"));
+    ).catch(err => bot.botMessage(err));
 }
 
 
@@ -50,10 +60,8 @@ function getTopVolume(){
         connect.prevDay(false, (error, prevDay) => {
             prevDay.forEach((element) => {
                 //Фільтрація непотрібних монет
-                if(element.symbol.search(/USDT/) != -1 &&
-                element.symbol.endsWith("USDT") &&  
-                element.symbol.search(/UP/) == -1 && 
-                element.symbol.search(/DOWN/) == -1){
+                let symbol = element.symbol;
+                if(symbol.match(/^((?!UP|DOWN).)*USDT$/) != null){
                     // console.log(element.volume, element.price);
                     element.volume = Math.floor(element.volume * element.lastPrice * 1/1000) / 1000;
                     resultObj.push(element);
@@ -68,11 +76,13 @@ function getTopVolume(){
           });
          
     }).then(result => bot.botMessage(result)
-    ).catch(err => bot.botMessage("Error"));
+    ).catch(err => {bot.botMessage(err)});
 }
 
-function createSignal(ticker, price, chatId){//////переписати функцію, працює криво
-    new Promise (async (resolve, reject) => {
+async function createSignal(ticker, price, chatId){//////переписати функцію, працює криво
+    let idUser = await bdUser.userController.getUserId(chatId);
+    
+    new Promise ( (resolve, reject) => {
         if(isNaN(+price))reject();
 
         let symbolObj = {};
@@ -80,7 +90,7 @@ function createSignal(ticker, price, chatId){//////переписати функ
         let trigger;
 
         ////////потрібно дістати ід юзера з бд
-        let idUser = await bdUser.userController.getUserId(chatId);
+        
         
         
         //////api binance
@@ -90,7 +100,7 @@ function createSignal(ticker, price, chatId){//////переписати функ
             });
 
         
-            for(key in symbolObj){
+            for(let key in symbolObj){
                 if(key == ticker){
                     // result = "Signal created!";
                     if(+symbolObj[key] > price){
