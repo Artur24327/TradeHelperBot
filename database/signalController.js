@@ -1,45 +1,64 @@
-const db = require('./db');
+const db = require('./db')
+const bot = require('../bot/main')
+class signalController {
+  async createSignal(idUser, symbol, price, triggerValue) {
+    await db
+      .query(
+        `INSERT INTO userSignals (idUser, symbol, price, triggerValue) 
+        values (${idUser}, '${symbol}', ${price}, '${triggerValue}')`
+      )
+      .then(() => bot.botMessage("Signal created!"))
+      .catch(() => bot.botMessage("Error in database..."))
+  }
 
-class signalController{
-    async createSignal(idUser, symbol, price, triggerValue) {
-        await db.query(`INSERT INTO userSignals (idUser, symbol, price, triggerValue) 
-        values (${idUser}, '${symbol}', ${price}, '${triggerValue}')`)
-        .catch(err => console.log(err));
-    }
+  async getAllSignals(chatId) {
+    let res
+    await db
+      .query(
+        `SELECT * FROM userSignals WHERE idUser IN (SELECT idUser FROM users WHERE idChat = '${chatId}')`
+      )
+      .then((result) => {
+        res = result.rows
+      })
+      .catch((err) => console.log(err))
+    return res
+  }
 
-    async getAllSignals(chatId) {
-        let res;
-        await db.query(`SELECT * FROM userSignals WHERE idUser IN (SELECT idUser FROM users WHERE idChat = '${chatId}')`)
-        .then(result => {res = result.rows})
-        .catch(err => console.log(err)); 
-        return res;
-    }
-
-    async getSignalsAllUsers() {
-        let res;
-        // await db.query(`SELECT * FROM userSignals`)
-        await db.query(`SELECT userSignals.symbol, userSignals.price, userSignals.triggervalue, users.idchat as idChat 
+  async getSignalsAllUsers() {
+    let res
+    // await db.query(`SELECT * FROM userSignals`)
+    await db
+      .query(
+        `SELECT userSignals.symbol, userSignals.price, userSignals.triggervalue, users.idchat as idChat 
         FROM userSignals RIGHT OUTER JOIN users 
-        ON userSignals.iduser = users.iduser`)
-        .then(result => {res = result.rows})
-        .catch(err => console.log(err)); 
-        return res;
-    }
+        ON userSignals.iduser = users.iduser`
+      )
+      .then((result) => {
+        res = result.rows
+      })
+      .catch((err) => console.log(err))
+    return res
+  }
 
-    async deleteSignal(chatId, symbol, price) {
-        let res;
-        await db.query(`DELETE FROM userSignals WHERE idUser IN (SELECT idUser FROM users
-            WHERE idchat = '${chatId}') AND symbol = '${symbol}' AND price = ${price}`)
-        .then(result => {
-            if(result.rowCount == 1){
-                res = "Signal deleted!";
-            }else if(result.rowCount == 0){
-                res = "Signal not found!";
-            }
-        })
-        .catch(() => {res = "Smth wrong with database..."}); 
-        return res;
-    }
+  async deleteSignal(chatId, symbol, price) {
+    let res
+    await db
+      .query(
+        `DELETE FROM userSignals WHERE idUser IN (SELECT idUser FROM users
+            WHERE idchat = '${chatId}') AND symbol = '${symbol}' AND price = ${price}`
+      )
+      .then((result) => {
+        if (result.rowCount == 1) {
+          res = 'Signal deleted!'
+        } else if (result.rowCount == 0) {
+          res = 'Signal not found!'
+        }
+      })
+      .catch(() => {
+        res = 'Smth wrong with database...'
+      })
+    return res
+  }
 }
 
-exports.signalController = new signalController();
+exports.signalController = new signalController()

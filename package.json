@@ -4,6 +4,7 @@
   "description": "",
   "main": "index.js",
   "scripts": {
+    "prettier": "prettier --write .",
     "dev": "nodemon index.js",
     "start": "node index.js"
   },
