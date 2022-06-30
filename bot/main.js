@@ -14,8 +14,6 @@ const descriptionMessages = `
 /show_volume (option) - get the info about TOP10 volume tickers
 /menu - to show all options`
 
-let id
-
 const commands = {
   reply_markup: JSON.stringify({
     inline_keyboard: [
@@ -35,38 +33,13 @@ function menuBot(chatId) {
   bot.sendMessage(chatId, 'Choose option:', commands)
 }
 
-function startBot() {
+function startBotListeners() {
   bot.setMyCommands([
     { command: '/info', description: 'To get info of commands' },
     { command: '/menu', description: 'Show all options' },
-    // {command: '/create_signal', description: 'Create signal'},
-    // {command: '/show_volume', description: 'Show TOP volume'},
-    // {command: '/show_active', description: 'Show TOP active'},
   ])
 
-  bot.on('callback_query', (message) => {
-    const data = message.data
-    const chatId = message.message.chat.id
-    id = chatId
-    switch (data) {
-      case '/create_signal':
-        bot.sendMessage(
-          chatId,
-          'Write ticker(example: "/create_signal btcusdt 200" ):'
-        )
-        break
-      case '/show_signal':
-        parser.showSignals(chatId)
-        break
-      case '/show_active':
-        parser.getTopActive()
-        break
-      case '/show_volume':
-        parser.getTopVolume()
-        break
-    }
-  })
-
+  ///Прослуховувач на меню - плитку
   bot.on('message', (message) => {
     const userMessage = message.text
     const chatId = message.chat.id
@@ -81,26 +54,47 @@ function startBot() {
       case '/menu':
         menuBot(chatId)
         break
-      // case '/create_signal':
-      //     bot.sendMessage(chatId, "Write ticker(example: /create_signal btcusdt):");
-      //     console.log(userMessage);
-      //     // parser.createSignal(userMessage);
-      //     break;
     }
   })
 
+  ///Прослуховувач на меню - плитку
+  bot.on('callback_query', (message) => {
+    const data = message.data
+    const chatId = message.message.chat.id
+
+    switch (data) {
+      case '/create_signal':
+        bot.sendMessage(
+          chatId,
+          'Write ticker(example: "/create_signal btcusdt 200" ):'
+        )
+        break
+      case '/show_signal':
+        parser.showSignals(chatId)
+        break
+      case '/show_active':
+        parser.getTopActive(chatId)
+        break
+      case '/show_volume':
+        parser.getTopVolume(chatId)
+        break
+    }
+  })
+
+  ///Прослуховувач на створення сигналів
   bot.onText(/\/create_signal (.+)/, (msg, match) => {
     const chatId = msg.chat.id
-    id = chatId
+
     const resp = match[1].split(' ')
     const ticker = resp[0].toUpperCase()
     const price = resp[1]
     parser.createSignal(ticker, price, chatId)
   })
 
+  ///Прослуховувач на видалення сигналів
   bot.onText(/\/delete_signal (.+)/, (msg, match) => {
     const chatId = msg.chat.id
-    id = chatId
+    //id = chatId
     const resp = match[1].split(' ')
     const ticker = resp[0].toUpperCase()
     const price = resp[1]
@@ -110,14 +104,14 @@ function startBot() {
   // commandBot(tokenBot);
 }
 
-function botMessage(message) {
-  bot.sendMessage(id, message)
+function botMessage(chatId, message) {
+  bot.sendMessage(chatId, message)
 }
 
-function signalAlert(idChat, message) {
-  bot.sendMessage(idChat, message)
-}
+// function signalAlert(idChat, message) {
+//   bot.sendMessage(idChat, message)
+// }
 
-exports.startBot = startBot
+exports.startBotListeners = startBotListeners
 exports.botMessage = botMessage
-exports.signalAlert = signalAlert
+//exports.signalAlert = signalAlert

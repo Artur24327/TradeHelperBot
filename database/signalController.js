@@ -1,14 +1,14 @@
 const db = require('./db')
 const bot = require('../bot/main')
 class signalController {
-  async createSignal(idUser, symbol, price, triggerValue) {
+  async createSignal(chatId, idUser, symbol, price, triggerValue) {
     await db
       .query(
         `INSERT INTO userSignals (idUser, symbol, price, triggerValue) 
         values (${idUser}, '${symbol}', ${price}, '${triggerValue}')`
       )
-      .then(() => bot.botMessage("Signal created!"))
-      .catch(() => bot.botMessage("Error in database..."))
+      .then(() => bot.botMessage(chatId, 'Signal created!'))
+      .catch(() => bot.botMessage(chatId, 'Error in database...'))
   }
 
   async getAllSignals(chatId) {
@@ -20,7 +20,7 @@ class signalController {
       .then((result) => {
         res = result.rows
       })
-      .catch((err) => console.log(err))
+      .catch(() => bot.botMessage(chatId, 'Error in database...'))
     return res
   }
 

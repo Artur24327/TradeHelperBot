@@ -2,9 +2,10 @@ const CronJob = require('cron').CronJob
 const bdSignal = require('../database/signalController')
 const binance = require('node-binance-api')
 const bot = require('../bot/main')
+const api = require('../config')
 const connect = new binance().options({
-  APIKEY: 'dkl5SmAcvSAtzXWi8kCHUojw03Npeghi7A3ErXgVoO7vsNFMpr9BLxevkH6dYUZh',
-  APISECRET: 'Q7a91imDhCHNfROw63LaOEm4FnPZqKXljh7GG0DINDAtr9sZ4BK8e59MJhC6d3CR',
+  APIKEY: api.MyApiKeys.apiKey,
+  APISECRET: api.MyApiKeys.apiSecret,
 })
 
 function cronStart() {
@@ -24,7 +25,7 @@ function cronStart() {
       dbSignals.forEach((element) => {
         if (element.triggervalue == '>') {
           if (binanceTickers[element.symbol] > element.price) {
-            bot.signalAlert(
+            bot.botMessage(
               element.idchat,
               `Signal ${element.symbol} on price ${element.price}`
             )
@@ -36,7 +37,7 @@ function cronStart() {
           }
         } else if (element.triggervalue == '<') {
           if (binanceTickers[element.symbol] < element.price) {
-            bot.signalAlert(
+            bot.botMessage(
               element.idchat,
               `Signal ${element.symbol} on price ${element.price}`
             )

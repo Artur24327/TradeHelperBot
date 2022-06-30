@@ -17,7 +17,8 @@
     "node-binance-api": "^0.13.1",
     "node-telegram-bot-api": "^0.56.0",
     "nodemon": "^2.0.15",
-    "pg": "^8.7.3"
+    "pg": "^8.7.3",
+    "sequelize": "^6.21.2"
   },
   "devDependencies": {
     "eslint": "^8.14.0",

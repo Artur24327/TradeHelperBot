@@ -8,7 +8,7 @@ const connect = new binance().options({
   APISECRET: keys.MyApiKeys.apiSecret,
 })
 
-function getTopActive() {
+function getTopActive(chatId) {
   new Promise((resolve) => {
     let resultObj = []
     let result = ''
@@ -25,16 +25,18 @@ function getTopActive() {
       })
       resultObj.sort(sortByField('priceChangePercent'))
       resultObj.slice(0, 10).forEach((element, i) => {
-        result += `${i+1}. ${element.symbol} +${element.priceChangePercent}%\n`
+        result += `${i + 1}. ${element.symbol} +${
+          element.priceChangePercent
+        }%\n`
       })
-      resolve(result)
+      resolve({ chatId, result })
     })
   })
-    .then((result) => bot.botMessage(result))
-    .catch((err) => bot.botMessage(err))
+    .then(({ chatId, result }) => bot.botMessage(chatId, result))
+    .catch((err) => bot.botMessage(chatId, err))
 }
 
-function getTopVolume() {
+function getTopVolume(chatId) {
   new Promise((resolve) => {
     let resultObj = []
     let result = ''
@@ -51,17 +53,16 @@ function getTopVolume() {
       })
       resultObj.sort(sortByField('volume'))
       resultObj.slice(0, 10).forEach((element, i) => {
-        result += `${i+1}. ${element.symbol} ${element.volume}M$\n`
+        result += `${i + 1}. ${element.symbol} ${element.volume}M$\n`
       })
-      resolve(result)
+      resolve({ chatId, result })
     })
   })
-    .then((result) => bot.botMessage(result))
-    .catch((err) => bot.botMessage(err))
+    .then(({ chatId, result }) => bot.botMessage(chatId, result))
+    .catch((err) => bot.botMessage(chatId, err))
 }
 
 async function createSignal(ticker, price, chatId) {
-
   ////////потрібно дістати ід юзера з бд
   const idUser = await bdUser.userController.getUserId(chatId)
 
@@ -91,25 +92,30 @@ async function createSignal(ticker, price, chatId) {
       }
 
       ///якщо трішер був не встановлений, значить не існує такої монетки
-      if(trigger === 'empty') reject()
-      resolve({ idUser, ticker, price, trigger })
+      if (trigger === 'empty') reject()
+      resolve({ chatId, idUser, ticker, price, trigger })
     })
   })
-    .then(({ idUser, ticker, price, trigger }) => {
-      bdSignal.signalController.createSignal(idUser, ticker, price, trigger)
+    .then(({ chatId, idUser, ticker, price, trigger }) => {
+      bdSignal.signalController.createSignal(
+        chatId,
+        idUser,
+        ticker,
+        price,
+        trigger
+      )
     })
     .catch(() => bot.botMessage('Bad enter! Repeat.'))
 }
 
 async function showSignals(chatId) {
   const query = await bdSignal.signalController.getAllSignals(chatId)
-  let result =
-    `You can delete signals. Write "/delete_signal *ticker* *price*"  
+  let result = `You can delete signals. Write "/delete_signal *ticker* *price*"  
     (For example "/delete_signal btcusdt 4000").\n \nYour signals:\n`
   query.forEach((element) => {
     result += element.symbol + ' ' + element.price + '\n'
   })
-  bot.botMessage(result)
+  bot.botMessage(chatId, result)
 }
 
 async function deleteSignal(ticker, price, chatId) {
@@ -118,7 +124,7 @@ async function deleteSignal(ticker, price, chatId) {
     ticker,
     price
   )
-  bot.botMessage(query)
+  bot.botMessage(chatId, query)
 }
 
 function sortByField(field) {
