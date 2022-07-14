@@ -39,7 +39,7 @@ function startBotListeners() {
     { command: '/menu', description: 'Show all options' },
   ])
 
-  ///Прослуховувач на меню - плитку
+  ///Прослуховувач на меню
   bot.on('message', (message) => {
     const userMessage = message.text
     const chatId = message.chat.id
@@ -108,10 +108,8 @@ function botMessage(chatId, message) {
   bot.sendMessage(chatId, message)
 }
 
-// function signalAlert(idChat, message) {
-//   bot.sendMessage(idChat, message)
-// }
+
 
 exports.startBotListeners = startBotListeners
 exports.botMessage = botMessage
-//exports.signalAlert = signalAlert
+

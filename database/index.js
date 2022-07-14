@@ -13,17 +13,5 @@ userSignal.belongsTo(user, {
   foreignKey: 'iduser',
 })
 
-// async function create() {
-//   // await userSignal.create({
-//   //   iduser: '2',
-//   //   symbol: 'BTCUSDT',
-//   //   price: '10000',
-//   //   triggervalue: '>',
-//   // })
-//   //console.log(await userSignal.findAll())
-// }
-
-//create()
-
 module.exports.user = user
 module.exports.userSignal = userSignal

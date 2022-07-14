@@ -1,21 +1,27 @@
-//const db = require('./db')
 const bot = require('../bot/main')
 const signal = require('./index').userSignal
 const user = require('./index').user
 
 class signalController {
-  createSignal(chatId, idUser, symbol, price, triggerValue) {
-    signal
-      .create({
-        iduser: idUser,
+  async createSignal(chatId, symbol, price, triggerValue) {
+    try {
+      const userDate = await user.findOne({
+        attributes: ['iduser'],
+        where: {
+          idchat: chatId,
+        },
+        logging: false,
+      })
+      await signal.create({
+        iduser: userDate.iduser,
         symbol: symbol,
         price: price,
         triggervalue: triggerValue,
       })
-      .then(() => bot.botMessage(chatId, 'Signal created!'))
-      .catch(() => {
-        bot.botMessage(chatId, 'Error in database...')
-      })
+      bot.botMessage(chatId, 'Signal created!')
+    } catch {
+      bot.botMessage(chatId, 'Error in database...')
+    }
   }
 
   async getAllSignals(chatId) {

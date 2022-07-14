@@ -1,6 +1,6 @@
 const bot = require('../bot/main')
 const bdSignal = require('../database/signalController')
-const bdUser = require('../database/userController')
+//const bdUser = require('../database/userController')
 const binance = require('node-binance-api')
 const keys = require('../config')
 
@@ -65,7 +65,7 @@ function getTopVolume(chatId) {
 
 async function createSignal(ticker, price, chatId) {
   ////////потрібно дістати ід юзера з бд
-  const idUser = await bdUser.userController.getUserId(chatId)
+  //const idUser = await bdUser.userController.getUserId(chatId)
 
   new Promise((resolve, reject) => {
     ///перевіряємо чи введена ціна число
@@ -94,17 +94,11 @@ async function createSignal(ticker, price, chatId) {
 
       ///якщо трішер був не встановлений, значить не існує такої монетки
       if (trigger === 'empty') reject()
-      resolve({ chatId, idUser, ticker, price, trigger })
+      resolve({ chatId, ticker, price, trigger })
     })
   })
-    .then(({ chatId, idUser, ticker, price, trigger }) => {
-      bdSignal.signalController.createSignal(
-        chatId,
-        idUser,
-        ticker,
-        price,
-        trigger
-      )
+    .then(({ chatId, ticker, price, trigger }) => {
+      bdSignal.signalController.createSignal(chatId, ticker, price, trigger)
     })
     .catch(() => bot.botMessage('Bad enter! Repeat.'))
 }
