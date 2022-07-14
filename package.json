@@ -18,7 +18,8 @@
     "node-telegram-bot-api": "^0.56.0",
     "nodemon": "^2.0.15",
     "pg": "^8.7.3",
-    "sequelize": "^6.21.2"
+    "sequelize": "^6.21.2",
+    "update": "^0.7.4"
   },
   "devDependencies": {
     "eslint": "^8.14.0",

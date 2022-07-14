@@ -3,6 +3,7 @@ const bdSignal = require('../database/signalController')
 const bdUser = require('../database/userController')
 const binance = require('node-binance-api')
 const keys = require('../config')
+
 const connect = new binance().options({
   APIKEY: keys.MyApiKeys.apiKey,
   APISECRET: keys.MyApiKeys.apiSecret,
