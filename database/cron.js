@@ -1,12 +1,15 @@
 const CronJob = require('cron').CronJob
-const bdSignal = require('../database/signalController')
+const bdSignal = require('./controllers/signalController')
 const binance = require('node-binance-api')
 const bot = require('../bot/main')
-const api = require('../config')
+require('dotenv').config()
+
+/* eslint-disable */
 const connect = new binance().options({
-  APIKEY: api.MyApiKeys.apiKey,
-  APISECRET: api.MyApiKeys.apiSecret,
+  APIKEY: process.env.API_KEY,
+  APISECRET: process.env.APE_SECRET,
 })
+/* eslint-enable */
 
 function cronStart() {
   let job = new CronJob('*/7 * * * * *', async function () {

@@ -1,11 +1,11 @@
 //const signal = require('./index').userSignal
-const user = require('./index').user
+const user = require('../index').user
 
 class userController {
   async createUser(idChat) {
     await user.findOrCreate({
       where: { idchat: idChat },
-      logging: false
+      logging: false,
     })
   }
 
@@ -29,7 +29,7 @@ class userController {
       where: {
         idchat: idChat,
       },
-      logging: false
+      logging: false,
     })
   }
 }

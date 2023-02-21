@@ -1,18 +1,16 @@
 const TelegramApi = require('node-telegram-bot-api')
 const parser = require('../parser/main')
-const bd = require('../database/userController')
-const tokenBot = '5169311848:AAHM85DS_v1So_dm5v5P-_EGYtorYBGg5Mc'
+const bd = require('../database/controllers/userController')
+require('dotenv').config()
+/* eslint-disable */
+const tokenBot = process.env.TOKEN_BOT
+/* eslint-enable */
 const bot = new TelegramApi(tokenBot, { polling: true })
 
 const firstMessage = `
 Hello my dear trader! I am going to do your trades faster and eazier.
-Write /info to get options what bot can.`
+Write /menu to get options what bot can.`
 
-const descriptionMessages = `
-/create_signal (option) - creat sound-message signal for ticker
-/show_active (option) - get the info about TOP10 more active tickers
-/show_volume (option) - get the info about TOP10 volume tickers
-/menu - to show all options`
 
 const commands = {
   reply_markup: JSON.stringify({
@@ -34,8 +32,9 @@ function menuBot(chatId) {
 }
 
 function startBotListeners() {
+  bot.on("polling_error", console.log);
+
   bot.setMyCommands([
-    { command: '/info', description: 'To get info of commands' },
     { command: '/menu', description: 'Show all options' },
   ])
 
@@ -48,36 +47,38 @@ function startBotListeners() {
         bot.sendMessage(chatId, firstMessage)
         bd.userController.createUser(chatId)
         break
-      case '/info':
-        bot.sendMessage(chatId, descriptionMessages)
-        break
       case '/menu':
         menuBot(chatId)
         break
     }
   })
-
+  
   ///Прослуховувач на меню - плитку
   bot.on('callback_query', (message) => {
     const data = message.data
     const chatId = message.message.chat.id
-
+    const messageId = message.message.message_id
     switch (data) {
       case '/create_signal':
         bot.sendMessage(
           chatId,
-          'Write ticker(example: "/create_signal btcusdt 200" ):'
+          'Write ticker(example: /create_signal btcusdt 200 ):'
         )
         break
       case '/show_signal':
         parser.showSignals(chatId)
+        bot.deleteMessage(chatId, messageId)
         break
       case '/show_active':
         parser.getTopActive(chatId)
+        bot.deleteMessage(chatId, messageId)
         break
       case '/show_volume':
         parser.getTopVolume(chatId)
+        bot.deleteMessage(chatId, messageId)
         break
+      default:
+        
     }
   })
 
@@ -108,8 +109,5 @@ function botMessage(chatId, message) {
   bot.sendMessage(chatId, message)
 }
 
-
-
 exports.startBotListeners = startBotListeners
 exports.botMessage = botMessage
-

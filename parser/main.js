@@ -1,13 +1,14 @@
 const bot = require('../bot/main')
-const bdSignal = require('../database/signalController')
-//const bdUser = require('../database/userController')
+const bdSignal = require('../database/controllers/signalController')
 const binance = require('node-binance-api')
-const keys = require('../config')
+require('dotenv').config()
 
+/* eslint-disable */
 const connect = new binance().options({
-  APIKEY: keys.MyApiKeys.apiKey,
-  APISECRET: keys.MyApiKeys.apiSecret,
+  APIKEY: process.env.API_KEY,
+  APISECRET: process.env.APE_SECRET,
 })
+/* eslint-enable */
 
 function getTopActive(chatId) {
   new Promise((resolve) => {
@@ -107,8 +108,8 @@ async function showSignals(chatId) {
   const query = await bdSignal.signalController.getAllSignals(chatId)
   let result = `You can delete signals. Write "/delete_signal *ticker* *price*"  
     (For example "/delete_signal btcusdt 4000").\n \nYour signals:\n`
-  query.forEach((element) => {
-    result += element.symbol + ' ' + element.price + '\n'
+  query.forEach((element, i) => {
+    result += i+1 + '.' + element.symbol + ' ' + element.price + ' ' + element.triggervalue +'\n'
   })
   bot.botMessage(chatId, result)
 }

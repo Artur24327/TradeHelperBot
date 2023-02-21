@@ -1,6 +1,6 @@
-const bot = require('../bot/main')
-const signal = require('./index').userSignal
-const user = require('./index').user
+const bot = require('../../bot/main')
+const signal = require('../index').userSignal
+const user = require('../index').user
 
 class signalController {
   async createSignal(chatId, symbol, price, triggerValue) {
