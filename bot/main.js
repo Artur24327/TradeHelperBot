@@ -11,7 +11,6 @@ const bot = new TelegramApi(tokenBot, { polling: true })
 const firstMessage = `
 Hello my dear trader! I am going to do your trades faster and eazier`
 
-
 // const commands = {
 //   reply_markup: JSON.stringify({
 //     inline_keyboard: [
@@ -30,88 +29,61 @@ Hello my dear trader! I am going to do your trades faster and eazier`
 const commands = {
   reply_markup: JSON.stringify({
     keyboard: [
-      [
-        { text: 'Create signal'},
-        { text: 'Show my signals'},
-      ],
-      [
-        { text: 'Show TOP volume'},
-        { text: 'Show TOP active'},
-      ],
-      [
-        { text: 'API keys'},
-      ],
+      [{ text: 'Create alert 📝' }, { text: 'Show my alerts 📑' }],
+      [{ text: 'Show TOP volume 📊' }, { text: 'Show TOP active 📈' }],
+      [{ text: 'API keys 🔑' }],
     ],
   }),
 }
-
 
 // function menuBot(chatId) {
 //   bot.sendMessage(chatId, 'Choose option:', commands)
 // }
 
-function startBotListeners() {
-
-  //bot.on("polling_error", console.log);
-
-  // bot.setMyCommands([
-     //{ command: '/menu', description: 'Show all options' },
-  // ])
-  
-
+async function startBotListeners() {
   ///Прослуховувач на меню
   bot.on('message', (message) => {
     const userMessage = message.text
     const chatId = message.chat.id
-    
-    if(userMessage === '/start'){
 
+    if (userMessage === '/start') {
       bot.sendMessage(chatId, firstMessage, commands)
       bd.userController.createUser(chatId)
-
-    }else{
-      
+    } else {
       switch (userMessage) {
-        case 'Create signal':
+        case 'Create alert 📝':
           bot.sendMessage(
             chatId,
             'Write ticker(example: /create_signal btcusdt 200 ):'
           )
           break
-        case 'Show my signals':
+        case 'Show my alerts 📑':
           parser.showSignals(chatId)
-         //bot.deleteMessage(chatId, messageId)
+          //bot.deleteMessage(chatId, messageId)
           break
-        case 'Show TOP active':
+        case 'Show TOP active 📈':
           parser.getTopActive(chatId)
           //bot.deleteMessage(chatId, messageId)
           break
-        case 'Show TOP volume':
+        case 'Show TOP volume 📊':
           parser.getTopVolume(chatId)
           //bot.deleteMessage(chatId, messageId)
           break
-        case 'API keys':
+        case 'API keys 🔑':
           //parser.getTopVolume(chatId)
           //bot.deleteMessage(chatId, messageId)
-          break      
-      
-        default:
-          
+          break
       }
     }
-    
-      // case '/menu':
-      //   menuBot(chatId)
-      //   break
   })
-  
+
   ///Прослуховувач на меню - плитку
   // bot.on('callback_query', (message) => {
   //   const data = message.text
   //   console.log('callback')
   //   const chatId = message.message.chat.id
   //   const messageId = message.message.message_id
-    
+
   //   switch (data) {
   //     case 'Create signal':
   //       bot.sendMessage(
@@ -133,9 +105,23 @@ function startBotListeners() {
   //       break
   //     default:
   //       console.log("nothing")
-        
+
   //   }
   // })
+
+  bot.on('callback_query', (message) => {
+    const data = message.data
+    const chatId = message.message.chat.id
+    //const messageId = message.message.message_id
+
+    const str = data.split('-')
+    const command = str[0]
+    const ticker = str[1]
+    const price = str[2]
+    if (command == 'Delete') {
+      parser.deleteSignal(ticker, price, chatId)
+    }
+  })
 
   ///Прослуховувач на створення сигналів
   bot.onText(/\/create_signal (.+)/, (msg, match) => {
@@ -148,16 +134,29 @@ function startBotListeners() {
   })
 
   ///Прослуховувач на видалення сигналів
-  bot.onText(/\/delete_signal (.+)/, (msg, match) => {
-    const chatId = msg.chat.id
-    //id = chatId
-    const resp = match[1].split(' ')
-    const ticker = resp[0].toUpperCase()
-    const price = resp[1]
-    parser.deleteSignal(ticker, price, chatId)
-  })
+  // bot.onText(/\/delete_signal (.+)/, (msg, match) => {
+  //   const chatId = msg.chat.id
+  //   //id = chatId
+  //   const resp = match[1].split(' ')
+  //   const ticker = resp[0].toUpperCase()
+  //   const price = resp[1]
+  //   console.log('onText')
+  //   parser.deleteSignal(ticker, price, chatId)
+  // })
+}
 
-  // commandBot(tokenBot);
+function generateTile(chatId, result, text) {
+  const commands = {
+    reply_markup: JSON.stringify({
+      inline_keyboard: result,
+    }),
+  }
+  // const commands = {
+  //   reply_markup: JSON.stringify({
+  //     inline_keyboard: [[{text:'unfi', callback_data:"Delete-UNFIUSDT-5"}]],
+  //   }),
+  // }
+  bot.sendMessage(chatId, text, commands)
 }
 
 function botMessage(chatId, message) {
@@ -166,3 +165,4 @@ function botMessage(chatId, message) {
 
 exports.startBotListeners = startBotListeners
 exports.botMessage = botMessage
+exports.generateTile = generateTile

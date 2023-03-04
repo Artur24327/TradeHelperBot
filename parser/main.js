@@ -1,6 +1,7 @@
 const bot = require('../bot/main')
 const bdSignal = require('../database/controllers/signalController')
 const binance = require('node-binance-api')
+
 require('dotenv').config()
 
 /* eslint-disable */
@@ -10,18 +11,22 @@ const connect = new binance().options({
 })
 /* eslint-enable */
 
+const BILLION = 1000000000
+const MILLION = 1000000
+
 function getTopActive(chatId) {
   new Promise((resolve) => {
     let resultObj = []
-    let result = ''
+    let result = 'Spot TOP\n'
 
     connect.prevDay(false, (error, prevDay) => {
       prevDay.forEach((element) => {
         //Фільтрація непотрібних монет
         const symbol = element.symbol
         if (symbol.match(/^((?!UP|DOWN).)*USDT$/) != null) {
-          element.priceChangePercent =
-            Math.floor(element.priceChangePercent * 100) / 100
+          // element.priceChangePercent =
+          //   Math.floor(element.priceChangePercent * 100) / 100
+          element.priceChangePercent = (+element.priceChangePercent).toFixed(1)
           resultObj.push(element)
         }
       })
@@ -34,20 +39,76 @@ function getTopActive(chatId) {
       resolve({ chatId, result })
     })
   })
-    .then(({ chatId, result }) => bot.botMessage(chatId, result))
+    .then(({ chatId, result }) => {
+      bot.botMessage(chatId, result)
+      futuresData(chatId, 'Active')
+    })
     .catch((err) => bot.botMessage(chatId, err))
+}
+
+async function futuresData(chatId, typeOfData) {
+  let futures = await connect.futuresDaily()
+  let resultObj = []
+  let result = 'Futures TOP'
+
+
+  for (let element in futures) {
+    let helpObj = {}
+    helpObj.symbol = futures[element].symbol + 'PERP'
+    helpObj.priceChangePercent = +futures[element].priceChangePercent
+    helpObj.priceChangePercent = +helpObj.priceChangePercent.toFixed(1)
+    helpObj.volume = +futures[element].volume * +futures[element].lastPrice
+    resultObj.push(helpObj)
+  }
+
+  if (typeOfData == 'Active') {
+    resultObj.sort(sortByField('priceChangePercent'))
+    resultObj.slice(0, 10).forEach((element, i) => {
+      element.priceChangePercent =
+        '+' + element.priceChangePercent.toFixed(1) + '%'
+      result += `\n${i + 1}. ${element.symbol} ${element.priceChangePercent}`
+    })
+  } else if (typeOfData == 'Volume') {
+    resultObj.sort(sortByField('volume'))
+    resultObj.slice(0, 10).forEach((element, i) => {
+      if (element.volume < BILLION) {
+        element.volume = `${(element.volume / MILLION).toFixed(3)} M$`
+      } else {
+        element.volume = `${(element.volume / BILLION).toFixed(3)} B$`
+      }
+      result += `\n${i + 1}. ${element.symbol} ${element.volume}`
+    })
+  }
+
+  // resultObj.slice(0, 10).forEach((element, i) => {
+  //   if (element.volume < BILLION) {
+  //     element.volume = `${(element.volume / MILLION).toFixed(3)} M$`
+  //   } else {
+  //     element.volume = `${(element.volume / BILLION).toFixed(3)} B$`
+  //   }
+  //   element.priceChangePercent = '+' + element.priceChangePercent.toFixed(1) + '%'
+
+  //   if(typeOfData == 'Active'){
+  //     result += `\n${i + 1}. ${element.symbol} ${element.priceChangePercent}`
+  //   }else if(typeOfData == 'Volume'){
+  //     result += `\n${i + 1}. ${element.symbol} ${element.volume}`
+  //   }
+  // })
+
+  bot.botMessage(chatId, result)
 }
 
 function getTopVolume(chatId) {
   new Promise((resolve) => {
     let resultObj = []
-    let result = ''
+    let result = 'Spot TOP\n'
 
     connect.prevDay(false, (error, prevDay) => {
       prevDay.forEach((element) => {
         //Фільтрація непотрібних монет
         let symbol = element.symbol
-        if (symbol.match(/^((?!UP|DOWN).)*USDT$/) != null) {
+        if (symbol.match(/^((?!UP|DOWN).)*USDT$/) != null 
+        || symbol.match(/^((?!UP|DOWN).)*BUSD$/) != null) {
           element.volume =
             Math.floor((element.volume * element.lastPrice * 1) / 1000) / 1000
           resultObj.push(element)
@@ -55,12 +116,21 @@ function getTopVolume(chatId) {
       })
       resultObj.sort(sortByField('volume'))
       resultObj.slice(0, 10).forEach((element, i) => {
-        result += `${i + 1}. ${element.symbol} ${element.volume}M$\n`
+        if (element.volume < 1000) {
+          result += `${i + 1}. ${element.symbol} ${element.volume} M$\n`
+        } else {
+          result += `${i + 1}. ${element.symbol} ${(
+            element.volume / 1000
+          ).toFixed(3)} B$\n`
+        }
       })
       resolve({ chatId, result })
     })
   })
-    .then(({ chatId, result }) => bot.botMessage(chatId, result))
+    .then(({ chatId, result }) => {
+      bot.botMessage(chatId, result)
+      futuresData(chatId, 'Volume')
+    })
     .catch((err) => bot.botMessage(chatId, err))
 }
 
@@ -106,12 +176,23 @@ async function createSignal(ticker, price, chatId) {
 
 async function showSignals(chatId) {
   const query = await bdSignal.signalController.getAllSignals(chatId)
-  let result = `You can delete signals. Write "/delete_signal *ticker* *price*"  
-    (For example "/delete_signal btcusdt 4000").\n \nYour signals:\n`
-  query.forEach((element, i) => {
-    result += i+1 + '.' + element.symbol + ' ' + element.price + ' ' + element.triggervalue +'\n'
+  // let result = `You can delete signals. Write "/delete_signal *ticker* *price*"
+  //   (For example "/delete_signal btcusdt 4000").\n \nYour signals:\n`
+  let result = []
+
+  query.forEach((element) => {
+    let obj = {}
+    let arr = []
+    obj.text =
+      'Delete ' + element.symbol + ' on ' + element.price + '    ' + '❌'
+    obj.callback_data = 'Delete-' + element.symbol + '-' + element.price
+    arr.push(obj)
+    result.push(arr)
+    //result += i+1 + '.' + element.symbol + ' ' + element.price + ' ' + element.triggervalue +'\n'
   })
-  bot.botMessage(chatId, result)
+
+  //bot.botMessage(chatId, result)
+  bot.generateTile(chatId, result, 'Your signals:')
 }
 
 async function deleteSignal(ticker, price, chatId) {
@@ -121,6 +202,7 @@ async function deleteSignal(ticker, price, chatId) {
     price
   )
   bot.botMessage(chatId, query)
+  showSignals(chatId)
 }
 
 function sortByField(field) {
