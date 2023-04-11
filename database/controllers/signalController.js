@@ -1,19 +1,14 @@
 const bot = require('../../bot/main')
 const signal = require('../index').userSignal
-const user = require('../index').user
+const userConnect = require('../index').user
+const user = require('./userController').userController
 
 class signalController {
   async createSignal(chatId, symbol, price, triggerValue) {
     try {
-      const userDate = await user.findOne({
-        attributes: ['iduser'],
-        where: {
-          idchat: chatId,
-        },
-        logging: false,
-      })
+      const iduser = await user.idUser(chatId)
       await signal.create({
-        iduser: userDate.iduser,
+        iduser: iduser,
         symbol: symbol,
         price: price,
         triggervalue: triggerValue,
@@ -26,17 +21,10 @@ class signalController {
 
   async getAllSignals(chatId) {
     try {
-      const userDate = await user.findOne({
-        attributes: ['iduser'],
-        where: {
-          idchat: chatId,
-        },
-        logging: false,
-      })
-
+      const iduser = await user.idUser(chatId)
       return await signal.findAll({
         where: {
-          iduser: userDate.iduser,
+          iduser: iduser,
         },
         logging: false,
       })
@@ -63,7 +51,7 @@ class signalController {
           'usersignals.triggervalue',
         ],
         include: {
-          model: user,
+          model: userConnect,
         },
         logging: false,
       })
@@ -74,22 +62,15 @@ class signalController {
 
   async deleteSignal(chatId, symbol, price) {
     try {
-      const userDate = await user.findOne({
-        attributes: ['iduser'],
-        where: {
-          idchat: chatId,
-        },
-      })
-
+      const iduser = await user.idUser(chatId)
       await signal.destroy({
         where: {
-          iduser: userDate.iduser,
+          iduser: iduser,
           symbol: symbol,
           price: price,
         },
       })
-
-      return 'Signal deleted!'
+      bot.botMessage(chatId, 'Signal deleted!')
     } catch (err) {
       bot.botMessage(chatId, 'Error in database...')
       console.log(err)
