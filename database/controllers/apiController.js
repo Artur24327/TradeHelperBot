@@ -27,7 +27,6 @@ class apiController {
         where: {
           iduser: iduser,
         },
-        logging: false,
       })
     } catch {
       bot.botMessage(chatId, 'Error in database...')
@@ -42,7 +41,6 @@ class apiController {
           idapi: idApi,
           iduser: iduser,
         },
-        logging: false,
       })
       bot.botMessage(chatId, 'API deleted!')
     } catch {

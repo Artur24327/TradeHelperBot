@@ -1,11 +1,9 @@
-//const signal = require('./index').userSignal
 const user = require('../index').user
 
 class userController {
   async createUser(idChat) {
     await user.findOrCreate({
       where: { idchat: idChat },
-      logging: false,
     })
   }
 
@@ -14,7 +12,6 @@ class userController {
       where: {
         idchat: idChat,
       },
-      logging: false,
     })
   }
 
@@ -24,7 +21,6 @@ class userController {
       where: {
         idchat: idChat,
       },
-      logging: false,
     })
     return userData.iduser
   }

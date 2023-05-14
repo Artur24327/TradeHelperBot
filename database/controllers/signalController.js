@@ -26,7 +26,6 @@ class signalController {
         where: {
           iduser: iduser,
         },
-        logging: false,
       })
 
       // return await signal.findAll({
@@ -43,18 +42,13 @@ class signalController {
 
   async getSignalsAllUsers() {
     try {
-      return await signal.findAll({
-        attributes: [
-          'user.idchat',
-          'usersignals.symbol',
-          'usersignals.price',
-          'usersignals.triggervalue',
-        ],
+      const res = await signal.findAll({
         include: {
           model: userConnect,
         },
-        logging: false,
       })
+      //console.log(res[1].dataValues)
+      return res
     } catch (err) {
       console.log(err)
     }

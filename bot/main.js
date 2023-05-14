@@ -1,5 +1,8 @@
 const TelegramApi = require('node-telegram-bot-api')
 const parser = require('../parser/main')
+
+const regularALertParser = require('../parser/regularAlerts').regularAlert
+
 const bd = require('../database/controllers/userController')
 const states = require('../user-state.enum')
 require('dotenv').config()
@@ -12,27 +15,25 @@ const bot = new TelegramApi(tokenBot, { polling: true })
 const firstMessage = `
 Hello my dear trader! I am going to do your trades faster and eazier`
 
-// const commands = {
-//   reply_markup: JSON.stringify({
-//     inline_keyboard: [
-//       [
-//         { text: 'Create signal', callback_data: '/create_signal' },
-//         { text: 'Show my signals', callback_data: '/show_signal' },
-//       ],
-//       [
-//         { text: 'Show TOP volume', callback_data: '/show_volume' },
-//         { text: 'Show TOP active', callback_data: '/show_active' },
-//       ],
-//     ],
-//   }),
-// }
+const instructionsLegularAlerts = `Simple instructions about regular alerts. 
+If you want to CREATE/ACTIVATE regular alert, you need to write: (/regular_alert timeframe_x1 atr_x2 volume_x3)`
 
 const menuCommands = {
   reply_markup: JSON.stringify({
     keyboard: [
+      [{ text: 'Set regular alerts 🚨' }],
       [{ text: 'Create alert 📝' }, { text: 'Show my alerts 📑' }],
       [{ text: 'Show TOP volume 📊' }, { text: 'Show TOP active 📈' }],
       [{ text: 'API keys 🔑' }],
+    ],
+  }),
+}
+
+const alertCommands = {
+  reply_markup: JSON.stringify({
+    keyboard: [
+      [{ text: 'Add regular alert' }, { text: 'Show regular alerts' }],
+      [{ text: 'Back to menu ⬅' }],
     ],
   }),
 }
@@ -46,12 +47,6 @@ const apiCommands = {
   }),
 }
 
-// function menuBot(chatId) {
-//   bot.sendMessage(chatId, 'Choose option:', commands)
-// }
-
-// let fisrtApiTrigger = false
-// let secondApiTrigger = false
 let stateMap = new Map()
 let stateApi = new Map()
 
@@ -94,6 +89,9 @@ async function startBotListeners() {
             'Write ticker(example: /create_signal btcusdt 200 ):'
           )
           return
+        case 'Set regular alerts 🚨':
+          bot.sendMessage(chatId, instructionsLegularAlerts)
+          return
         case 'Show my alerts 📑':
           parser.showSignals(chatId)
           //bot.deleteMessage(chatId, messageId)
@@ -125,37 +123,6 @@ async function startBotListeners() {
     }
   })
 
-  ///Прослуховувач на меню - плитку
-  // bot.on('callback_query', (message) => {
-  //   const data = message.text
-  //   console.log('callback')
-  //   const chatId = message.message.chat.id
-  //   const messageId = message.message.message_id
-
-  //   switch (data) {
-  //     case 'Create signal':
-  //       bot.sendMessage(
-  //         chatId,
-  //         'Write ticker(example: /create_signal btcusdt 200 ):'
-  //       )
-  //       break
-  //     case 'Show my signals':
-  //       parser.showSignals(chatId)
-  //       bot.deleteMessage(chatId, messageId)
-  //       break
-  //     case 'Show TOP active':
-  //       parser.getTopActive(chatId)
-  //       bot.deleteMessage(chatId, messageId)
-  //       break
-  //     case 'Show TOP volume':
-  //       parser.getTopVolume(chatId)
-  //       bot.deleteMessage(chatId, messageId)
-  //       break
-  //     default:
-  //       console.log("nothing")
-
-  //   }
-  // })
 
   bot.on('callback_query', (message) => {
     const data = message.data
@@ -181,23 +148,20 @@ async function startBotListeners() {
   ///Прослуховувач на створення сигналів
   bot.onText(/\/create_signal (.+)/, (msg, match) => {
     const chatId = msg.chat.id
-    console.log(1)
     const resp = match[1].split(' ')
     const ticker = resp[0].toUpperCase()
     const price = resp[1]
     parser.createSignal(ticker, price, chatId)
   })
 
-  ///Прослуховувач на видалення сигналів
-  // bot.onText(/\/delete_signal (.+)/, (msg, match) => {
-  //   const chatId = msg.chat.id
-  //   //id = chatId
-  //   const resp = match[1].split(' ')
-  //   const ticker = resp[0].toUpperCase()
-  //   const price = resp[1]
-  //   console.log('onText')
-  //   parser.deleteSignal(ticker, price, chatId)
-  // })
+  bot.onText(/\/regular_alert (.+)/, (msg, match) => {
+    const chatId = msg.chat.id
+    const text = match[1].split(' ')
+    const timeframe = text[0].toLowerCase()
+    regularALertParser.synchronizeAlert(chatId, timeframe, match[1])
+    //parser.createSignal(ticker, price, chatId)
+  })
+
 }
 
 function addApiKey(chatId, msg) {

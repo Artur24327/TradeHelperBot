@@ -2,7 +2,6 @@ const bot = require('../bot/main')
 const bdSignal = require('../database/controllers/signalController')
 const binance = require('node-binance-api')
 const bdApi = require('../database/controllers/apiController').apiController
-
 require('dotenv').config()
 
 /* eslint-disable */
@@ -11,7 +10,6 @@ const connect = new binance().options({
   APISECRET: process.env.APE_SECRET,
 })
 /* eslint-enable */
-
 const BILLION = 1000000000
 const MILLION = 1000000
 
@@ -46,6 +44,7 @@ function getTopActive(chatId) {
 }
 
 async function futuresData(chatId, typeOfData) {
+  //console.log( await connect.futuresCandles( "BTCUSDT", "1M" ) );
   let futures = await connect.futuresDaily()
   let resultObj = []
   let result = 'Futures TOP'
@@ -178,11 +177,7 @@ async function showSignals(chatId) {
 }
 
 async function deleteSignal(ticker, price, chatId) {
-  await bdSignal.signalController.deleteSignal(
-    chatId,
-    ticker,
-    price
-  )
+  await bdSignal.signalController.deleteSignal(chatId, ticker, price)
   //bot.botMessage(chatId, query)
   showSignals(chatId)
 }

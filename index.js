@@ -1,5 +1,7 @@
 const bot = require('./bot/main')
-const cron = require('./database/cron')
+const cronDB = require('./database/cron').jobDB
+const cronCalc = require('./alerts/calculates').jobCalc
 // parser.getFutersPrice();
 bot.startBotListeners()
-cron.cronStart()
+cronDB.start()
+cronCalc.start()
