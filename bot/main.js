@@ -123,7 +123,6 @@ async function startBotListeners() {
     }
   })
 
-
   bot.on('callback_query', (message) => {
     const data = message.data
     const chatId = message.message.chat.id
@@ -161,7 +160,6 @@ async function startBotListeners() {
     regularALertParser.synchronizeAlert(chatId, timeframe, match[1])
     //parser.createSignal(ticker, price, chatId)
   })
-
 }
 
 function addApiKey(chatId, msg) {

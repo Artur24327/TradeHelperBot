@@ -1,7 +1,8 @@
 const bot = require('../bot/main')
 const bdSignal = require('../database/controllers/signalController')
 const binance = require('node-binance-api')
-const bdAlert = require('../database/controllers/regularAlertsController').regularALertsController
+const bdAlert =
+  require('../database/controllers/regularAlertsController').regularALertsController
 //const { regularALertsController } = require('../database/controllers/regularAlertsController')
 require('dotenv').config()
 
@@ -12,13 +13,10 @@ const connect = new binance().options({
 })
 /* eslint-enable */
 
-class regularAlert{
-   
-    synchronizeAlert(chatId, timeframe, text){
-    
-        bdAlert.updateAlert(chatId, timeframe, text)
- 
-    }
+class regularAlert {
+  synchronizeAlert(chatId, timeframe, text) {
+    bdAlert.updateAlert(chatId, timeframe, text)
+  }
 }
 
 exports.regularAlert = new regularAlert()

@@ -6,7 +6,7 @@ const regularAlertsModel = require('./models/regularAlerts.model')
 const sequelize = new Sequelize('traderBot', 'postgres', 'Artur-228', {
   host: 'localhost',
   dialect: 'postgres',
-  logging: false
+  logging: false,
 })
 
 const user = usersModel(sequelize)
