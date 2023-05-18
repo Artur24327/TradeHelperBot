@@ -51,9 +51,10 @@ const jobCalc = new CronJob(' */5 * * * *', async function () {
       marketData.close[i] = +element[4]
     })
 
-    for (atrValue in usersAlerts) {
+    for (atrValue in usersAtr) {
       if (atr(marketData) > atrAllTickers[symbol] * atrValue) {
-        usersAlerts.atrValue.forEach((chatId) => {
+        //console.log(usersAlerts)
+        usersAtr[atrValue].forEach((chatId) => {
           bot.botMessage(chatId, `${symbol} is more active then usual`)
         })
       }

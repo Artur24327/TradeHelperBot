@@ -1,10 +1,10 @@
 const TelegramApi = require('node-telegram-bot-api')
 const parser = require('../parser/main')
-
 const regularALertParser = require('../parser/regularAlerts').regularAlert
-
 const bd = require('../database/controllers/userController')
 const states = require('../user-state.enum')
+const statistics = require('../statistics/dataUserAPI').dataUserAPI
+
 require('dotenv').config()
 
 /* eslint-disable */
@@ -23,8 +23,8 @@ const menuCommands = {
     keyboard: [
       [{ text: 'Set regular alerts 🚨' }],
       [{ text: 'Create alert 📝' }, { text: 'Show my alerts 📑' }],
-      [{ text: 'Show TOP volume 📊' }, { text: 'Show TOP active 📈' }],
-      [{ text: 'API keys 🔑' }],
+      [{ text: 'Show TOP volume 📊' }, { text: 'Show TOP active 🚀' }],
+      [{ text: 'API keys 🔑' }, { text: 'Statistics 📈' }],
     ],
   }),
 }
@@ -96,7 +96,7 @@ async function startBotListeners() {
           parser.showSignals(chatId)
           //bot.deleteMessage(chatId, messageId)
           return
-        case 'Show TOP active 📈':
+        case 'Show TOP active 🚀':
           parser.getTopActive(chatId)
           //bot.deleteMessage(chatId, messageId)
           return
@@ -118,6 +118,9 @@ async function startBotListeners() {
           return
         case 'Show my API':
           parser.showApi(chatId)
+          return
+        case 'Statistics 📈':
+          statistics.getBalance(chatId)
           return
       }
     }

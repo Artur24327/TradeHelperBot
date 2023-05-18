@@ -11,10 +11,12 @@
   "author": "ArturDziubak",
   "license": "ISC",
   "dependencies": {
+    "anychart": "^8.11.0",
     "cron": "^1.8.2",
     "dotenv": "^16.0.1",
     "express": "^4.17.3",
     "git": "^0.1.5",
+    "moment": "^2.29.4",
     "node-binance-api": "^0.13.1",
     "node-telegram-bot-api": "^0.56.0",
     "nodemon": "^2.0.15",

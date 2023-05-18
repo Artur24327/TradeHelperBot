@@ -210,18 +210,21 @@ async function addApi(chatId, apiKey, apiSecret) {
   const testConnection = new binance().options({
     APIKEY: apiKey,
     APISECRET: apiSecret,
-    //useServerTime: true,
-    //recvWindow: 60000,
   })
-  //await testConnection.useServerTime();
-  testConnection.balance((error, balances) => {
-    //if ( error ) return console.error(error);
-    if (typeof balances.ETH === 'undefined') {
-      return bot.botMessage(chatId, 'Wrong keys! Try again.')
-    } else {
-      bdApi.createAPI(chatId, apiKey, apiSecret)
-    }
-  })
+  const response = await testConnection.futuresAccount()
+  if (response.code) {
+    return bot.botMessage(chatId, 'Wrong keys! Try again.')
+  } else {
+    bdApi.createAPI(chatId, apiKey, apiSecret)
+  }
+  // testConnection.balance((error, balances) => {
+  //   console.log(balances)
+  //   if (typeof balances === 'undefined') {
+  //     return bot.botMessage(chatId, 'Wrong keys! Try again.')
+  //   } else {
+  //     bdApi.createAPI(chatId, apiKey, apiSecret)
+  //   }
+  // })
 }
 
 exports.getTopActive = getTopActive
